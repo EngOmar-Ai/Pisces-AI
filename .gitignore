@@ -1,0 +1,28 @@
+# PyCharm / JetBrains
+.idea/
+
+# Python byte-compiled and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+
+# Custom project directories
+data/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Unit testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/

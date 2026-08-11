@@ -1,0 +1,5 @@
+tokenizers
+datasets
+python-dotenv
+mysql-connector-python
+numpy
