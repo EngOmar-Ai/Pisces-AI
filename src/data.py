@@ -116,9 +116,9 @@ def save_text_file_to_database(filepath: str, database_configuration: dict, tabl
         if connection and connection.is_connected():
             connection.close()
 
-# ==================================================== #
-#        Load Training Batch From The Database         #
-# ==================================================== #
+# =================================================== #
+#            Load Batch From The Database             #
+# =================================================== #
 
 def load_english_wiki_batch(cursor, table: str , batch_size: int):
     """
