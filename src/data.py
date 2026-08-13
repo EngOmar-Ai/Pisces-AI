@@ -8,6 +8,7 @@ from model import tokenizer
 import numpy
 import mysql.connector
 
+import random
 import sys
 
 # =============================== #
@@ -84,17 +85,13 @@ def save_text_file_to_database(filepath: str, database_configuration: dict, tabl
         for t in extract_tokens(filepath):
 
             sample.append(t)
-            counter += 1
 
-            if counter == sequence_length + 1:
+            if len(sample) == sequence_length + 1:
 
                 array = numpy.array(sample, dtype=numpy.uint16).tobytes()
-
                 batch.append((array,))
 
-                counter = 0
                 sample.clear()
-
                 samples_count += 1
 
                 if len(batch) == batch_size:
@@ -102,10 +99,9 @@ def save_text_file_to_database(filepath: str, database_configuration: dict, tabl
                     cursor.executemany(query, batch)
                     connection.commit()
 
-                    print(f"Saved {samples_count:,} samples")
-
                     batch.clear()
 
+                    print(f"Saved {samples_count:,} samples")
 
     except mysql.connector.Error as error:
         if connection:
@@ -124,15 +120,58 @@ def save_text_file_to_database(filepath: str, database_configuration: dict, tabl
 #        Load Training Batch From The Database         #
 # ==================================================== #
 
-def load_english_wiki_train_batch():
-    ...
+def load_english_wiki_batch(cursor, table: str , batch_size: int):
+    """
+    Loads a random batch of training/testing data from a database table.
 
-# =================================================== #
-#        Load Testing Batch From The Database         #
-# =================================================== #
+    This function retrieves a specified number of random records from the given
+    database table, handles primary key gaps gracefully, and parses the binary
+    sample data into NumPy arrays suitable for model training.
 
-def load_english_wiki_test_batch():
-    ...
+    Args:
+      cursor: The database cursor object used to execute queries.
+      table (str): The name of the database table to query.
+      batch_size (int): The number of samples to load in the batch.
+
+    Returns:
+      tuple[numpy.ndarray, numpy.ndarray]: A tuple containing:
+          - batch_input: Array of input tokens of shape (batch_size, 512).
+          - batch_output: Array of target tokens of shape (batch_size, 512).
+    """
+
+    cursor.execute(f"SELECT MIN(id), MAX(id) FROM {table}")
+    min_id, max_id = cursor.fetchone()
+
+    if not min_id or not max_id:
+        raise ValueError("The Table Is Empty")
+
+    ids = [random.randint(min_id, max_id) for _ in range(batch_size)]
+    placeholders = ','.join(['%s'] * batch_size)
+
+    cursor.execute(f"SELECT sample FROM {table} WHERE id IN ({placeholders});", ids)
+
+    samples = [row[0] for row in cursor.fetchall() if row[0] is not None]
+
+    while len(samples) < batch_size:
+        random_id = random.randint(min_id, max_id)
+
+        cursor.execute(f"SELECT sample FROM {table} WHERE id = %s;", (random_id,))
+        sample = cursor.fetchone()
+
+        if sample is not None:
+            samples.append(sample[0])
+
+    batch_input, batch_output = [], []
+    for sample in samples:
+        tokens = numpy.frombuffer(sample, dtype=numpy.uint16).tolist()
+
+        batch_input.append(tokens[:512])
+        batch_output.append(tokens[512:])
+
+    batch_input = numpy.array(batch_input, dtype=numpy.uint16)
+    batch_output = numpy.array(batch_output, dtype=numpy.uint16)
+
+    return batch_input, batch_output
 
 # ============================= #
 #             Main              #
@@ -140,21 +179,3 @@ def load_english_wiki_test_batch():
 
 if __name__ == '__main__':
     ...
-
-# db_config = {
-#     "host": os.getenv("DB_HOST"),
-#     "user": os.getenv("DB_USER"),
-#     "password": os.getenv("DB_PASSWORD"),
-#     "database": os.getenv("DB_NAME"),
-# }
-#
-# db_table = "EnglishWikiTrainSamples"
-#
-# fp = r'../data/EnglishWiki/Train/EnglishWikiTrainChunk1'
-# import time
-# start = time.perf_counter()
-# save_text_file_to_database(filepath=fp, database_configuration=db_config, table=db_table, sequence_length=512, batch_size=1000)
-# end = time.perf_counter()
-# print(f"Time Taken: {end-start}")
-#
-# tokens = numpy.frombuffer(binary, dtype=numpy.uint16).tolist()

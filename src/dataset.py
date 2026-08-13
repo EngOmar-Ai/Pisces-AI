@@ -20,62 +20,62 @@ load_dotenv()
 ENGLISH_WIKI_TRAIN_CONFIG_1 = {
     'start_index': 0,
     'end_index': 500000,
-    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk1"
+    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk1.txt"
 }
 
 ENGLISH_WIKI_TRAIN_CONFIG_2 = {
     'start_index': 500000,
     'end_index': 1000000,
-    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk2"
+    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk2.txt"
 }
 
 ENGLISH_WIKI_TRAIN_CONFIG_3 = {
     'start_index': 1000000,
     'end_index': 1500000,
-    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk3"
+    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk3.txt"
 
 }
 
 ENGLISH_WIKI_TRAIN_CONFIG_4 = {
     'start_index': 1500000,
     'end_index': 2000000,
-    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk4"
+    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk4.txt"
 }
 
 ENGLISH_WIKI_TRAIN_CONFIG_5 = {
     'start_index': 2000000,
     'end_index': 2500000,
-    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk5"
+    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk5.txt"
 }
 
 ENGLISH_WIKI_TRAIN_CONFIG_6 = {
     'start_index': 2500000,
     'end_index': 3000000,
-    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk6"
+    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk6.txt"
 }
 
 ENGLISH_WIKI_TRAIN_CONFIG_7 = {
     'start_index': 3000000,
     'end_index': 3500000,
-    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk7"
+    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk7.txt"
 }
 
 ENGLISH_WIKI_TRAIN_CONFIG_8 = {
     'start_index': 3500000,
     'end_index': 4000000,
-    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk8"
+    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk8.txt"
 }
 
 ENGLISH_WIKI_TRAIN_CONFIG_9 = {
     'start_index': 4000000,
     'end_index': 4500000,
-    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk9"
+    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk9.txt"
 }
 
 ENGLISH_WIKI_TRAIN_CONFIG_10 = {
     'start_index': 4500000,
     'end_index': 5000000,
-    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk10"
+    'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk10.txt"
 }
 
 # ================================================= #
@@ -85,13 +85,13 @@ ENGLISH_WIKI_TRAIN_CONFIG_10 = {
 ENGLISH_WIKI_TEST_CONFIG_1 = {
     'start_index': 5000000,
     'end_index': 5500000,
-    'destination_filepath': "../data/EnglishWiki/Test/EnglishWikiTestChunk1"
+    'destination_filepath': "../data/EnglishWiki/Test/EnglishWikiTestChunk1.txt"
 }
 
 ENGLISH_WIKI_TEST_CONFIG_2 =  {
     'start_index': 5500000,
     'end_index': 6000000,
-    'destination_filepath': "../data/EnglishWiki/Test/EnglishWikiTestChunk2"
+    'destination_filepath': "../data/EnglishWiki/Test/EnglishWikiTestChunk2.txt"
 }
 
 # ========================================= #
