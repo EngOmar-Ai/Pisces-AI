@@ -38,7 +38,7 @@ class MultiLayerPerceptron(nn.Module):
             x: Input sequence representations.
 
         Returns:
-            The Processed sequence representations.
+            The Processed Tensor.
         """
 
         return self.network(x)

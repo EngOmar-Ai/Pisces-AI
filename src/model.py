@@ -19,9 +19,5 @@ batch_size = 8
 
 path = r'../results/Transformer.pth'
 
-# ============================= #
-#             Main              #
-# ============================= #
-
 if __name__ == "__main__":
     ...
