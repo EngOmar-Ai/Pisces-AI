@@ -1,9 +1,5 @@
-# ====================== #
-#         Imports        #
-# ====================== #
-
 from dotenv import load_dotenv
-from model import tokenizer
+from tokenizer import tokenizer
 
 import numpy
 import mysql.connector
@@ -11,15 +7,7 @@ import mysql.connector
 import random
 import sys
 
-# =============================== #
-#        Load '.env' File         #
-# =============================== #
-
 load_dotenv()
-
-# =============================================== #
-#        Saving Text File To The Database         #
-# =============================================== #
 
 def save_text_file_to_database(filepath: str, database_configuration: dict, table: str, sequence_length: int, batch_size: int) -> None:
     """
@@ -116,10 +104,6 @@ def save_text_file_to_database(filepath: str, database_configuration: dict, tabl
         if connection and connection.is_connected():
             connection.close()
 
-# =================================================== #
-#            Load Batch From The Database             #
-# =================================================== #
-
 def load_english_wiki_batch(cursor, table: str , batch_size: int) -> tuple:
     """
     Loads a random batch of training/testing data from a database table.
@@ -172,10 +156,6 @@ def load_english_wiki_batch(cursor, table: str , batch_size: int) -> tuple:
     batch_output = numpy.array(batch_output, dtype=numpy.uint16)
 
     return batch_input, batch_output
-
-# ============================= #
-#             Main              #
-# ============================= #
 
 if __name__ == '__main__':
     ...

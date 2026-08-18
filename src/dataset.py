@@ -1,21 +1,9 @@
-# ====================== #
-#         Imports        #
-# ====================== #
-
 from datasets import load_dataset
 from dotenv import load_dotenv
 
 import sys
 
-# =============================== #
-#        Load '.env' File         #
-# =============================== #
-
 load_dotenv()
-
-# ================================================== #
-#        English Wiki Training Configurations        #
-# ================================================== #
 
 ENGLISH_WIKI_TRAIN_CONFIG_1 = {
     'start_index': 0,
@@ -78,10 +66,6 @@ ENGLISH_WIKI_TRAIN_CONFIG_10 = {
     'destination_filepath': "../data/EnglishWiki/Train/EnglishWikiTrainChunk10.txt"
 }
 
-# ================================================= #
-#        English Wiki Testing Configurations        #
-# ================================================= #
-
 ENGLISH_WIKI_TEST_CONFIG_1 = {
     'start_index': 5000000,
     'end_index': 5500000,
@@ -93,10 +77,6 @@ ENGLISH_WIKI_TEST_CONFIG_2 =  {
     'end_index': 6000000,
     'destination_filepath': "../data/EnglishWiki/Test/EnglishWikiTestChunk2.txt"
 }
-
-# ========================================= #
-#        Saving Chunks To Text File         #
-# ========================================= #
 
 def save_english_wikipedia_chunk(start_index: int, end_index: int, destination_filepath: str) -> None:
     """
@@ -158,10 +138,6 @@ def save_english_wikipedia_chunk(start_index: int, end_index: int, destination_f
                     print(f"    ID: {log['id']}, URL: {log['url']}, Title: {log['title']}, Error: {log['error']}")
             else:
                 print(f"Successfully Saved English Wikipedia Chunk To {destination_filepath}, No Samples Skipped")
-
-# ============================= #
-#             Main              #
-# ============================= #
 
 if __name__ == "__main__":
     ...
