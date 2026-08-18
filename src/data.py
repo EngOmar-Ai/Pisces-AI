@@ -21,7 +21,7 @@ load_dotenv()
 #        Saving Text File To The Database         #
 # =============================================== #
 
-def save_text_file_to_database(filepath: str, database_configuration: dict, table: str, sequence_length: int, batch_size: int):
+def save_text_file_to_database(filepath: str, database_configuration: dict, table: str, sequence_length: int, batch_size: int) -> None:
     """
     Tokenize a text file and save fixed-length token sequences to MySQL.
 
@@ -120,7 +120,7 @@ def save_text_file_to_database(filepath: str, database_configuration: dict, tabl
 #            Load Batch From The Database             #
 # =================================================== #
 
-def load_english_wiki_batch(cursor, table: str , batch_size: int):
+def load_english_wiki_batch(cursor, table: str , batch_size: int) -> tuple:
     """
     Loads a random batch of training/testing data from a database table.
 
@@ -166,7 +166,7 @@ def load_english_wiki_batch(cursor, table: str , batch_size: int):
         tokens = numpy.frombuffer(sample, dtype=numpy.uint16).tolist()
 
         batch_input.append(tokens[:512])
-        batch_output.append(tokens[512:])
+        batch_output.append(tokens[1:])
 
     batch_input = numpy.array(batch_input, dtype=numpy.uint16)
     batch_output = numpy.array(batch_output, dtype=numpy.uint16)
