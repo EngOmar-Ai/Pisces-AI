@@ -31,7 +31,7 @@ class WarmupStableDecayLRScheduler:
             learning_rate: The peak (maximum) learning rate. Must be greater than 0.
             minimum_ratio: Fraction of `learning_rate` used as the floor
                 (`min_learning_rate = learning_rate * minimum_ratio`). Must be in
-                the range (0, 1]. Defaults to 0.05.
+                the range [0, 1]. Defaults to 0.05.
 
         Raises:
             SystemExit: If `transition_steps`, `learning_rate`, or `minimum_ratio`

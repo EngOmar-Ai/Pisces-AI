@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from tokenizer import tokenizer
+from model import tokenizer
 
 import numpy
 import mysql.connector

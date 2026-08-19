@@ -1,6 +1,10 @@
 from transformer import Transformer, torch, nn
 from scheduler import WarmupStableDecayLRScheduler
-from tokenizer import vocab
+from tokenizers import Tokenizer
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 LEARNING_RATE = 3e-4
 MINIMUM_LEARNING_RATE_RATIO = 0.05
@@ -11,6 +15,9 @@ SEQUENCE_LENGTH = 512
 NUMBER_OF_HEADS = 8
 BATCH_SIZE = 8
 MODE_TRANSITION_STEPS = 10000
+
+tokenizer = Tokenizer.from_pretrained('gpt2')
+vocab = tokenizer.get_vocab_size()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
