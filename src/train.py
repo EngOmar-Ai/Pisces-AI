@@ -1,7 +1,7 @@
 from model import SEQUENCE_LENGTH, BATCH_SIZE, GRAD_CLIP_VALUE, model, device, criterion, scheduler, optimizer, metrics, path
 from data import load_english_wiki_batch
 
-from math import ceil, exp
+from math import exp
 import sys
 
 import mysql.connector

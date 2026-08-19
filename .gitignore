@@ -16,6 +16,7 @@ ENV/
 
 # Custom project directories
 data/
+results/
 
 # Distribution / packaging
 build/
