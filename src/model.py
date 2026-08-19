@@ -3,6 +3,7 @@ from transformer import Transformer, torch, nn
 from scheduler import WarmupStableDecayLRScheduler
 from tokenizers import Tokenizer
 
+from pathlib import Path
 from dotenv import load_dotenv
 # -------------------------------------------- #
 
@@ -24,6 +25,8 @@ SEQUENCE_LENGTH = 512
 BATCH_SIZE = 8
 
 MODE_TRANSITION_STEPS = 10000
+
+GRAD_CLIP_VALUE = 1.0
 # ------------------------------#
 
 # --------------- Tokenizer --------------- #
@@ -58,10 +61,19 @@ scheduler = WarmupStableDecayLRScheduler(
 criterion = nn.CrossEntropyLoss()
 # ---------------------------------------------------------------- #
 
-# --- Metrics --- #
-global_step = 0
-tokens_seen = 0
-# --------------- #
+# --------- Metrics --------- #
+metrics = {
+    'tokens_seen': [],
+    'training_loss': [],
+    'validation_loss': [],
+    'training_perplexity': [],
+    'validation_perplexity': [],
+}
+# --------------------------- #
+
+# ------------- Path ------------- #
+path = Path("../results/Pisces.pth")
+# -------------------------------- #
 
 if __name__ == "__main__":
     ...

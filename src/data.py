@@ -1,8 +1,9 @@
 from dotenv import load_dotenv
 from model import tokenizer
 
-import numpy
+import torch
 import mysql.connector
+import numpy
 
 import random
 import sys
@@ -152,8 +153,8 @@ def load_english_wiki_batch(cursor, table: str , batch_size: int) -> tuple:
         batch_input.append(tokens[:512])
         batch_output.append(tokens[1:])
 
-    batch_input = numpy.array(batch_input, dtype=numpy.uint16)
-    batch_output = numpy.array(batch_output, dtype=numpy.uint16)
+    batch_input = torch.tensor(batch_input, dtype=torch.long)
+    batch_output = torch.tensor(batch_output, dtype=torch.long)
 
     return batch_input, batch_output
 
