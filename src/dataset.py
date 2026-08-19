@@ -141,4 +141,3 @@ def save_english_wikipedia_chunk(start_index: int, end_index: int, destination_f
 
 if __name__ == "__main__":
     ...
-

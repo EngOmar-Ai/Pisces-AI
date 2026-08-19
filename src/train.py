@@ -10,6 +10,28 @@ import torch
 from torch.nn.utils import clip_grad_norm_ as clip_gradients
 
 def train(samples: int, database: dict, training_table: str, validation_table: str):
+    """
+    Run a training loop for a fixed number of batches, then validate and checkpoint.
+
+    Connects to the MySQL database, loads any existing checkpoint, trains the
+    model for `samples` batches (backprop + gradient clipping + optimizer/scheduler
+    step per batch),
+
+    runs a validation pass on 10% as many batches, logs a
+    metrics report to stdout, and saves an updated checkpoint before closing
+    the database connection.
+
+    Args:
+        samples: Number of training batches to run this call.
+        database: Keyword args passed to mysql.connector.connect (host, user,
+            password, database, etc.).
+        training_table: Name of the MySQL table to pull training batches from.
+        validation_table: Name of the MySQL table to pull validation batches from.
+
+    Raises:
+        SystemExit: If the MySQL connection fails.
+    """
+
     connection, cursor = None, None
 
     try:
@@ -30,7 +52,7 @@ def train(samples: int, database: dict, training_table: str, validation_table: s
 
             loss = criterion(logits, y)
 
-            optimizer.zero_grad()
+            optimizer.zero_grad(set_to_none=True)
             loss.backward()
 
             clip_gradients(model.parameters(), GRAD_CLIP_VALUE)
@@ -46,7 +68,7 @@ def train(samples: int, database: dict, training_table: str, validation_table: s
         validation_loss = validate(cursor, ceil(samples * 0.1), validation_table)
         validation_perplexity = exp(validation_loss)
 
-        tokens_seen = SEQUENCE_LENGTH * samples
+        tokens_seen = BATCH_SIZE * SEQUENCE_LENGTH * samples
 
         metrics['tokens_seen'].append(tokens_seen)
         metrics['training_loss'].append(training_loss)
@@ -60,12 +82,7 @@ def train(samples: int, database: dict, training_table: str, validation_table: s
         print(f"| {training_loss:^13.5f} | {training_perplexity:^19.5f} | {validation_loss:^15.5f} | {validation_perplexity:^21.5f} | {tokens_seen:^11} |")
         print(f"-----------------------------------------------------------------------------------------------")
 
-        choice = input("Would you like to save the model? (y/n): ").strip().lower()
-        if choice == 'y' or choice == 'yes':
-            save()
-            print(f"Saved The Model Successfully At {path}")
-        else:
-            print(f"Model Discarded...")
+        save()
 
     except mysql.connector.Error as error:
         sys.exit(f"Error while connecting to MySQL: {error}")
@@ -77,6 +94,22 @@ def train(samples: int, database: dict, training_table: str, validation_table: s
             connection.close()
 
 def validate(cursor, samples: int, validation_table: str):
+    """
+    Run a no-grad evaluation pass and return the mean validation loss.
+
+    Switches the model to eval mode, runs `samples` batches from
+    `validation_table` without gradient tracking, averages the loss, then
+    switches the model back to train mode before returning.
+
+    Args:
+       cursor: Open MySQL cursor used to fetch validation batches.
+       samples: Number of validation batches to run.
+       validation_table: Name of the MySQL table to pull validation batches from.
+
+    Returns:
+       float: Mean validation loss across the sampled batches.
+    """
+
     model.eval()
 
     validation_loss = 0
@@ -99,6 +132,14 @@ def validate(cursor, samples: int, validation_table: str):
     return validation_loss
 
 def save():
+    """
+    Save a checkpoint containing model/optimizer/scheduler state and metrics.
+
+    Writes model_state_dict, optimizer_state_dict, scheduler_state_dict, and
+    the full metrics history (tokens seen, training/validation loss and
+    perplexity) to `path` via torch.save.
+    """
+
     checkpoint = {
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
@@ -115,6 +156,15 @@ def save():
     torch.save(checkpoint, path)
 
 def load():
+    """
+    Restore model/optimizer/scheduler state and metrics from a checkpoint.
+
+    If a checkpoint exists at `path`, loads it (mapped to `device`) and
+    restores model_state_dict, optimizer_state_dict, scheduler_state_dict,
+    and the metrics history in place. If no checkpoint is found, leaves
+    the current (default) state untouched and prints a notice.
+    """
+
     if path.exists():
         data = torch.load(path, map_location=device)
 
