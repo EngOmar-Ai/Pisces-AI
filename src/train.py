@@ -9,7 +9,7 @@ import torch
 
 from torch.nn.utils import clip_grad_norm_ as clip_gradients
 
-def train(samples: int, database: dict, training_table: str, validation_table: str):
+def train(database: dict, training_samples: int, validation_samples: int, training_table: str, validation_table: str):
     """
     Run a training loop for a fixed number of batches, then validate and checkpoint.
 
@@ -17,14 +17,14 @@ def train(samples: int, database: dict, training_table: str, validation_table: s
     model for `samples` batches (backprop + gradient clipping + optimizer/scheduler
     step per batch),
 
-    runs a validation pass on 10% as many batches, logs a
+    runs a validation pass on the validation batches specified, logs a
     metrics report to stdout, and saves an updated checkpoint before closing
     the database connection.
 
     Args:
-        samples: Number of training batches to run this call.
-        database: Keyword args passed to mysql.connector.connect (host, user,
-            password, database, etc.).
+        database: Keyword args passed to mysql.connector.connect (host, user, password, database, etc.).
+        training_samples: Number of training batches to run this call.
+        validation_samples: Number of validation batches to run this call.
         training_table: Name of the MySQL table to pull training batches from.
         validation_table: Name of the MySQL table to pull validation batches from.
 
@@ -44,7 +44,7 @@ def train(samples: int, database: dict, training_table: str, validation_table: s
 
         training_loss = 0
 
-        for counter in range(samples):
+        for counter in range(training_samples):
             x, y = load_english_wiki_batch(cursor, training_table, BATCH_SIZE)
             x, y = x.to(device), y.to(device)
 
@@ -62,13 +62,13 @@ def train(samples: int, database: dict, training_table: str, validation_table: s
 
             training_loss = training_loss + loss.item()
 
-        training_loss = training_loss / samples
+        training_loss = training_loss / training_samples
         training_perplexity = exp(training_loss)
 
-        validation_loss = validate(cursor, ceil(samples * 0.1), validation_table)
+        validation_loss = validate(cursor, validation_samples, validation_table)
         validation_perplexity = exp(validation_loss)
 
-        tokens_seen = BATCH_SIZE * SEQUENCE_LENGTH * samples
+        tokens_seen = BATCH_SIZE * SEQUENCE_LENGTH * training_samples
 
         metrics['tokens_seen'].append(tokens_seen)
         metrics['training_loss'].append(training_loss)
