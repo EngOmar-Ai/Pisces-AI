@@ -1,3 +1,4 @@
+from torch.optim import Optimizer
 import sys
 
 class WarmupStableDecayLRScheduler:
@@ -16,7 +17,7 @@ class WarmupStableDecayLRScheduler:
     update the optimizer's learning rate.
     """
 
-    def __init__(self, optimizer, mode: str, transition_steps: int, learning_rate: float | int, minimum_ratio: float | int = 0.05) -> None:
+    def __init__(self, optimizer : Optimizer, mode: str, transition_steps: int, learning_rate: float | int, minimum_ratio: float | int = 0.05) -> None:
         """
         Initialize the scheduler and attach it to an optimizer.
 

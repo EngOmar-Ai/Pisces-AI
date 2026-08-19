@@ -1,23 +1,23 @@
-import torch, torch.nn as nn
+from torch import nn
+import torch
 
 class MultiLayerPerceptron(nn.Module):
+    """
+    Feed-forward (MLP) block used inside each transformer block.
+
+    Applies the standard transformer FFN pattern: an up-projection to a wider
+    hidden dimension, a GELU nonlinearity, dropout, a down-projection back to
+    `d_model`, and a final dropout.
+    """
+
     def __init__(self, d_model: int, d_hidden: int) -> None:
         """
-        Feed-forward network used inside a Transformer block.
-
-        Expands the model dimension by a factor of four, applies GELU
-        activation and dropout, then projects the representation back
-        to the original model dimension.
+        Initialize the MLP's linear layers.
 
         Args:
-            d_model: Dimensionality of the Transformer representations.
-            d_hidden: Hidden dimensionality of the feed-forward network.
-
-        Input shape:
-            [batch_size, sequence_length, d_model]
-
-        Output shape:
-            [batch_size, sequence_length, d_model]
+            d_model: Input and output feature dimension (the model's hidden size).
+            d_hidden: Dimension of the intermediate hidden layer, typically
+                4 * d_model.
         """
 
         super().__init__()
@@ -32,36 +32,34 @@ class MultiLayerPerceptron(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        Run the input through the Multi Layer Perceptron.
+        Apply the MLP to the input.
 
         Args:
-            x: Input sequence representations.
+            x: Input tensor of shape (batch, sequence_length, d_model).
 
         Returns:
-            The Processed Tensor.
+            Output tensor of shape (batch, sequence_length, d_model).
         """
 
         return self.network(x)
 
 class TransformerBlock(nn.Module):
+    """
+    A single pre-norm transformer decoder block.
+
+    Consists of a self-attention sub-layer followed by an MLP sub-layer, each
+    wrapped in a pre-layer-norm + residual connection (i.e. LayerNorm is applied
+    before the sub-layer, and its input is added back afterward).
+    """
+
     def __init__(self, d_model: int, num_heads: int) -> None:
         """
-        A single pre-layer-normalized Transformer block.
-
-        The block consists of a multi-head self-attention layer followed
-        by a feed-forward network. Layer normalization is applied before
-        each sublayer, and residual connections are applied after each
-        sublayer.
+        Initialize the block's sub-layers.
 
         Args:
-            d_model: Dimensionality of the Transformer representations.
-            num_heads: Number of attention heads.
-
-        Input shape:
-            [batch_size, sequence_length, d_model]
-
-        Output shape:
-            [batch_size, sequence_length, d_model]
+            d_model: Model hidden dimension, must be divisible by `num_heads`.
+            num_heads: Number of attention heads used in the multi-head
+                self-attention sub-layer.
         """
 
         super().__init__()
@@ -74,15 +72,17 @@ class TransformerBlock(nn.Module):
 
     def forward(self, x: torch.Tensor, mask: torch.Tensor|None =None) -> torch.Tensor:
         """
-        Run the input through the Transformer block.
+        Run the block's self-attention and MLP sub-layers, each with a residual connection.
 
         Args:
-            x: Input sequence representations.
-            mask: Optional causal attention mask. Positions masked with
-                negative infinity cannot be attended to.
+           x: Input tensor of shape (batch, sequence_length, d_model).
+           mask: Optional attention mask passed to `nn.MultiheadAttention` as
+               `attn_mask` (e.g. a causal mask of shape
+               (sequence_length, sequence_length) with -inf in disallowed
+               positions). Defaults to None (no masking).
 
         Returns:
-            The transformed sequence representations.
+           Output tensor of shape (batch, sequence_length, d_model).
         """
 
         output = self.first_layer_norm(x)
@@ -98,35 +98,30 @@ class TransformerBlock(nn.Module):
         return output
 
 class Transformer(nn.Module):
+    """
+    A GPT-style decoder-only transformer for autoregressive language modeling.
+
+    Combines learned token and positional embeddings, a stack of causally-masked
+    `TransformerBlock`s, a final layer norm, and a linear output head whose
+    weights are tied to the token embedding matrix.
+    """
+
     def __init__(self, d_model: int, vocab_size: int, num_heads: int, sequence_length: int, num_transformer_blocks: int) -> None:
         """
-        GPT-style Transformer language model.
-
-        Converts token IDs into token and positional embeddings, processes
-        them through a stack of causal Transformer blocks, and projects the
-        final representations into vocabulary logits.
-
-        The token embedding weights are shared with the output projection
-        layer (weight tying), reducing the number of trainable parameters
-        and allowing the same token representations to be used for both
-        input embeddings and output predictions.
+        Build the embeddings, causal mask buffer, transformer blocks, and output head.
 
         Args:
-            d_model: Dimensionality of the Transformer representations.
-            vocab_size: Number of tokens in the vocabulary.
-            num_heads: Number of attention heads in each Transformer block.
-            sequence_length: Maximum supported sequence length.
-            num_transformer_blocks: Number of Transformer blocks.
+            d_model: Model hidden dimension used throughout the network.
+            vocab_size: Number of tokens in the vocabulary, used for both the token embedding table and the output projection.
+            num_heads: Number of attention heads in each transformer block.
+            sequence_length: Maximum sequence length supported; used to size the positional embedding table and the causal attention mask.
+            num_transformer_blocks: Number of stacked `TransformerBlock` layers.
 
-        Input shape:
-            [batch_size, sequence_length]
-
-        Output shape:
-            [batch_size, sequence_length, vocab_size]
-
-        Note:
-            The model uses a causal attention mask so that each token can
-            only attend to itself and preceding tokens.
+        Notes:
+            Registers a lower-triangular causal mask (`-inf` above the diagonal)
+            as a buffer named "mask" so it moves with the module across devices.
+            Initializes all weights via `initialize_weights`, then ties the
+            output layer's weight matrix to the token embedding weight matrix.
         """
 
         super().__init__()
@@ -150,20 +145,15 @@ class Transformer(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        Perform a forward pass through the Transformer language model.
-
-        Token IDs are converted into token and positional embeddings, then
-        passed through the Transformer blocks using a causal attention mask.
-        The final representations are normalized and projected into logits
-        over the vocabulary.
+        Run a forward pass through the transformer to produce next-token logits.
 
         Args:
-            x: Input token IDs with shape
-                [batch_size, sequence_length].
+            x: Input tensor of token ids with shape (batch, sequence_length),
+                where sequence_length must not exceed the `sequence_length`
+                the model was initialized with.
 
         Returns:
-            Logits for each token position with shape
-            [batch_size, sequence_length, vocab_size].
+            Logits tensor of shape (batch, sequence_length, vocab_size).
         """
 
         token_embeddings = self.token_embeddings(x)
@@ -184,15 +174,17 @@ class Transformer(nn.Module):
     @staticmethod
     def initialize_weights(module):
         """
-        Initialize trainable parameters using GPT-style initialization.
-
-        Linear and embedding weights are initialized from a normal
-        distribution with mean 0 and standard deviation 0.02. Linear
-        biases are initialized to zero, while LayerNorm weights and
-        biases are initialized to one and zero respectively.
+        Initialize weights for a single module, applied recursively via `self.apply`.
 
         Args:
-            module: Module whose parameters should be initialized.
+            module: A submodule of the `Transformer` (as passed by `nn.Module.apply`).
+
+        Behavior:
+            - `nn.Linear` / `nn.Embedding`: weights are initialized from a
+              normal distribution with mean 0.0 and std 0.02; `nn.Linear`
+              biases (if present) are zeroed.
+            - `nn.LayerNorm`: bias is zeroed and weight is filled with 1.0.
+            - Any other module type is left unchanged.
         """
 
         with torch.no_grad():
