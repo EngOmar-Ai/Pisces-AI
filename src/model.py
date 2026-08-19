@@ -1,11 +1,16 @@
+# ----------------- Imports ------------------ #
 from transformer import Transformer, torch, nn
 from scheduler import WarmupStableDecayLRScheduler
 from tokenizers import Tokenizer
 
 from dotenv import load_dotenv
+# -------------------------------------------- #
 
+# -- Environment -- #
 load_dotenv()
+# ----------------- #
 
+# ------- Configuration ------- #
 LEARNING_RATE = 3e-4
 MINIMUM_LEARNING_RATE_RATIO = 0.05
 WEIGHT_DECAY = 0.1
@@ -15,10 +20,14 @@ SEQUENCE_LENGTH = 512
 NUMBER_OF_HEADS = 8
 BATCH_SIZE = 8
 MODE_TRANSITION_STEPS = 10000
+# ------------------------------#
 
+# --------------- Tokenizer --------------- #
 tokenizer = Tokenizer.from_pretrained('gpt2')
 vocab = tokenizer.get_vocab_size()
+# ----------------------------------------- #
 
+# --------------------- Model Initialization --------------------- #
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 model = Transformer(
@@ -43,8 +52,12 @@ scheduler = WarmupStableDecayLRScheduler(
 )
 
 criterion = nn.CrossEntropyLoss()
+# ---------------------------------------------------------------- #
 
-path = r'../results/Transformer.pth'
+# --- Metrics --- #
+global_step = 0
+tokens_seen = 0
+# --------------- #
 
 if __name__ == "__main__":
     ...
